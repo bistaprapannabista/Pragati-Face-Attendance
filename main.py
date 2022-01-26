@@ -1,13 +1,29 @@
-import face_recognition
 import cv2
+import face_recognition
+import datetime,os
 
-orginal_image = cv2.imread("img.jpg", cv2.IMREAD_COLOR)
-image = face_recognition.load_image_file("img.jpg")
-face_locations = face_recognition.face_locations(image)
+def known_faces():
+    return os.listdir('img/')
 
-for face_location in face_locations:
-    cv2.rectangle(orginal_image,(face_location[3],face_location[2]),(face_location[1],face_location[0]),(255,0,0),2)
 
-cv2.imshow("Image",orginal_image)
-cv2.waitKey(0)
+vid = cv2.VideoCapture(0)
+
+while(True):
+    ret, frame = vid.read()
+    cv2.imshow('frame',frame)
+    unknown_encoding = face_recognition.face_encodings(frame)
+
+    if unknown_encoding:
+        unknown_encoding=unknown_encoding[0]
+        for known_face in known_faces():
+            print(known_face)
+            known_image = face_recognition.load_image_file('img/'+known_face)
+            known_encoding = face_recognition.face_encodings(known_image)[0]
+            results = face_recognition.compare_faces([known_encoding],unknown_encoding)
+            print(results)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+vid.release()
 cv2.destroyAllWindows()
